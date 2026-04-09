@@ -85,6 +85,9 @@ class ListFilesTest {
                     System.out.println("Reading file " + p);
                     String content = Files.readString(p);
                     assertEquals("", content);
+                    Path normalized = p.normalize();
+                    System.out.println("normalized = " + normalized);
+                    assertEquals(BASE_PATH_DIR_FILE.replace('\\', '/'), normalized.toString());
                 }
             }
             List<String> stringList = list.stream().map(Path::toString).toList();
@@ -105,6 +108,10 @@ class ListFilesTest {
 
             @Override
             public @NonNull FileVisitResult visitFile(@NonNull Path file, @NonNull BasicFileAttributes attrs) throws IOException {
+                if (file.getFileName().toString().equals(".gitkeep")) {
+                    return FileVisitResult.CONTINUE;
+                }
+
                 list.add(file.toString());
                 return FileVisitResult.CONTINUE;
             }
@@ -121,7 +128,7 @@ class ListFilesTest {
         if (!exceptions.isEmpty()) {
             System.out.println("exceptions = " + exceptions);
         }
-        assertPathList(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
+        assertPathList(List.of(BASE_PATH, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         assertTrue(exceptions.isEmpty());
     }
 
