@@ -1,6 +1,8 @@
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -8,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,6 +18,8 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 class ListFilesTest {
@@ -31,12 +36,15 @@ class ListFilesTest {
     }
 
     @BeforeEach
-    void prepareBaseDir() throws IOException {
+    void prepareBaseDir() throws IOException, InterruptedException {
         if (isWin()) {
             String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
             absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
-            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "mkdir \"" +  absoluteBasePath + "\""});
-            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "type nul > \"" + absoluteBasePath + "\\file.txt\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/C", "mkdir \"" +  absoluteBasePath + "\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/C", "type nul > \"" + absoluteBasePath + "\\file.txt\""});
+            new ProcessBuilder(
+                    "cmd", "/C", "dir /S " + absoluteBasePath
+            ).inheritIO().start().waitFor();
         } else {
             Files.createDirectories(Path.of(BASE_PATH_DIR));
             Files.createFile(Path.of(BASE_PATH_DIR_FILE));
@@ -48,8 +56,8 @@ class ListFilesTest {
         if (isWin()) {
             String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
             absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
-            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "del \"" + absoluteBasePath + "\\file.txt\""});
-            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "rd \"" + absoluteBasePath + "\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/C", "del \"" + absoluteBasePath + "\\file.txt\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/C", "rd \"" + absoluteBasePath + "\""});
         } else {
             Files.delete(Path.of(BASE_PATH_DIR_FILE));
             Files.delete(Path.of(BASE_PATH_DIR));
@@ -99,8 +107,18 @@ class ListFilesTest {
     }
 
     @Test
+    void fileList() {
+        File baseDir = new File(BASE_PATH);
+        String[] files = baseDir.list();
+        Arrays.sort(files);
+        System.out.println("files = " + Arrays.toString(files));
+        assertArrayEquals(new String[]{".gitkeep", "dir "}, files);
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
     void createDirTrailingWhitespace() throws IOException {
-        Path dir = tmpdir.resolve("mydir ");
+        Path dir = tmpdir.resolve("mydir "); // throws java.nio.file.InvalidPathException under Windows
         Files.createDirectory(dir);
         assertTrue(Files.isDirectory(dir));
         Path file = dir.resolve("file.txt");
