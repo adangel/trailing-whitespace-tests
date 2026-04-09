@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -19,31 +18,30 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class ListFilesTest {
-    private static final String BASE_PATH_NAME = "src/test/resources/testcase";
-    private static final Path BASE_PATH = Paths.get(BASE_PATH_NAME);
-    private static final Path BASE_PATH_GITKEEP = Paths.get(BASE_PATH_NAME + "/.gitkeep");
-    private static final Path BASE_PATH_DIR = Paths.get(BASE_PATH_NAME + "/dir ");
-    private static final Path BASE_PATH_DIR_FILE = Paths.get(BASE_PATH_NAME + "/dir /file.txt");
+    private static final String BASE_PATH = "src/test/resources/testcase";
+    private static final String BASE_PATH_GITKEEP = BASE_PATH + "/.gitkeep";
+    private static final String BASE_PATH_DIR = BASE_PATH + "/dir ";
+    private static final String BASE_PATH_DIR_FILE = BASE_PATH + "/dir /file.txt";
 
     @TempDir
     private Path tmpdir;
 
     @BeforeEach
     void prepareBaseDir() throws IOException {
-        Files.createDirectories(BASE_PATH_DIR);
-        Files.createFile(BASE_PATH_DIR_FILE);
+        Files.createDirectories(Path.of(BASE_PATH_DIR));
+        Files.createFile(Path.of(BASE_PATH_DIR_FILE));
     }
 
     @AfterEach
     void cleanBaseDir() throws IOException {
-        Files.delete(BASE_PATH_DIR_FILE);
-        Files.delete(BASE_PATH_DIR);
+        Files.delete(Path.of(BASE_PATH_DIR_FILE));
+        Files.delete(Path.of(BASE_PATH_DIR));
     }
 
     @Test
     void filesWalkStream() throws IOException {
-        try (var stream = Files.walk(BASE_PATH)) {
-            List<Path> list = stream.sorted().toList();
+        try (var stream = Files.walk(Path.of(BASE_PATH))) {
+            List<String> list = stream.sorted().map(Path::toString).toList();
             System.out.println("listStream = " + list);
             assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         }
@@ -51,18 +49,18 @@ class ListFilesTest {
 
     @Test
     void filesWalkTree() throws IOException {
-        List<Path> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         List<Exception> exceptions = new ArrayList<>();
-        Files.walkFileTree(BASE_PATH, new SimpleFileVisitor<>() {
+        Files.walkFileTree(Path.of(BASE_PATH), new SimpleFileVisitor<>() {
             @Override
             public @NonNull FileVisitResult preVisitDirectory(@NonNull Path dir, @NonNull BasicFileAttributes attrs) throws IOException {
-                list.add(dir);
+                list.add(dir.toString());
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public @NonNull FileVisitResult visitFile(@NonNull Path file, @NonNull BasicFileAttributes attrs) throws IOException {
-                list.add(file);
+                list.add(file.toString());
                 return FileVisitResult.CONTINUE;
             }
 
