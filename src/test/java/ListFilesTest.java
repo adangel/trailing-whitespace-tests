@@ -87,7 +87,7 @@ class ListFilesTest {
                     assertEquals("", content);
                     Path normalized = p.normalize();
                     System.out.println("normalized = " + normalized);
-                    assertEquals(BASE_PATH_DIR_FILE.replace('\\', '/'), normalized.toString());
+                    assertEquals(BASE_PATH_DIR_FILE.replace('\\', '/'), normalized.toString().replace('\\', '/'));
                 }
             }
             List<String> stringList = list.stream().map(Path::toString).toList();
