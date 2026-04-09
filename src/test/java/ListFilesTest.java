@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,9 +43,11 @@ class ListFilesTest {
             absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
             Runtime.getRuntime().exec(new String[]{"cmd", "/C", "mkdir \"" +  absoluteBasePath + "\""});
             Runtime.getRuntime().exec(new String[]{"cmd", "/C", "type nul > \"" + absoluteBasePath + "\\file.txt\""});
-            new ProcessBuilder(
+            Process dirProcess = new ProcessBuilder(
                     "cmd", "/C", "dir /S " + absoluteBasePath
-            ).inheritIO().start().waitFor();
+            ).redirectErrorStream(true).start();
+            System.out.println("dir: " + new String(dirProcess.getInputStream().readAllBytes(), Charset.defaultCharset()));
+            dirProcess.waitFor();
         } else {
             Files.createDirectories(Path.of(BASE_PATH_DIR));
             Files.createFile(Path.of(BASE_PATH_DIR_FILE));
