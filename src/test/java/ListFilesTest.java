@@ -102,10 +102,10 @@ class ListFilesTest {
         });
         Collections.sort(list);
         System.out.println("  listTree = " + list);
-        assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         if (!exceptions.isEmpty()) {
             System.out.println("exceptions = " + exceptions);
         }
+        assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         assertTrue(exceptions.isEmpty());
     }
 
