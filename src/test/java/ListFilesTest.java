@@ -44,7 +44,7 @@ class ListFilesTest {
             Runtime.getRuntime().exec(new String[]{"cmd", "/C", "mkdir \"" +  absoluteBasePath + "\""});
             Runtime.getRuntime().exec(new String[]{"cmd", "/C", "type nul > \"" + absoluteBasePath + "\\file.txt\""});
             Process dirProcess = new ProcessBuilder(
-                    "cmd", "/C", "dir /S " + absoluteBasePath
+                    "cmd", "/C", "dir /S " + Path.of(BASE_PATH).toAbsolutePath()
             ).redirectErrorStream(true).start();
             System.out.println("dir: " + new String(dirProcess.getInputStream().readAllBytes(), Charset.defaultCharset()));
             dirProcess.waitFor();
