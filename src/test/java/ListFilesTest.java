@@ -16,8 +16,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -36,8 +37,8 @@ class ListFilesTest {
         return System.getProperty("os.name").toLowerCase().startsWith("win");
     }
 
-    @BeforeEach
-    void prepareBaseDir() throws IOException, InterruptedException {
+    @BeforeAll
+    static void prepareBaseDir() throws IOException, InterruptedException {
         if (isWin()) {
             String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
             absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
@@ -54,8 +55,8 @@ class ListFilesTest {
         }
     }
 
-    @AfterEach
-    void cleanBaseDir() throws IOException {
+    @AfterAll
+    static void cleanBaseDir() throws IOException {
         if (isWin()) {
             String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
             absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
@@ -72,7 +73,7 @@ class ListFilesTest {
                 actual.toString().replace('\\', '/'));
     }
 
-    @Test
+    @RepeatedTest(100)
     void filesWalkStream() throws IOException {
         try (var stream = Files.walk(Path.of(BASE_PATH))) {
             List<String> list = stream.sorted().map(Path::toString).toList();
