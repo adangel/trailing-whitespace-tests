@@ -13,24 +13,39 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class ListFilesTest {
     private static final String BASE_PATH_NAME = "src/test/resources/testcase";
     private static final Path BASE_PATH = Paths.get(BASE_PATH_NAME);
+    private static final Path BASE_PATH_GITKEEP = Paths.get(BASE_PATH_NAME + "/.gitkeep");
     private static final Path BASE_PATH_DIR = Paths.get(BASE_PATH_NAME + "/dir ");
     private static final Path BASE_PATH_DIR_FILE = Paths.get(BASE_PATH_NAME + "/dir /file.txt");
 
     @TempDir
     private Path tmpdir;
 
+    @BeforeEach
+    void prepareBaseDir() throws IOException {
+        Files.createDirectories(BASE_PATH_DIR);
+        Files.createFile(BASE_PATH_DIR_FILE);
+    }
+
+    @AfterEach
+    void cleanBaseDir() throws IOException {
+        Files.delete(BASE_PATH_DIR_FILE);
+        Files.delete(BASE_PATH_DIR);
+    }
+
     @Test
     void filesWalkStream() throws IOException {
         try (var stream = Files.walk(BASE_PATH)) {
             List<Path> list = stream.sorted().toList();
             System.out.println("listStream = " + list);
-            assertEquals(List.of(BASE_PATH, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
+            assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         }
     }
 
@@ -60,10 +75,7 @@ class ListFilesTest {
         });
         Collections.sort(list);
         System.out.println("  listTree = " + list);
-        assertEquals(List.of(BASE_PATH,
-                Path.of("src/test/resources/testcase/dir "),
-                Path.of("src/test/resources/testcase/dir /file.txt")
-                ), list);
+        assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         if (!exceptions.isEmpty()) {
             System.out.println("exceptions = " + exceptions);
         }
