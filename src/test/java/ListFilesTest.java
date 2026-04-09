@@ -67,12 +67,17 @@ class ListFilesTest {
         }
     }
 
+    private static void assertPathList(List<String> expected, List<String> actual) {
+        assertEquals(expected.toString().replace('\\', '/'),
+                actual.toString().replace('\\', '/'));
+    }
+
     @Test
     void filesWalkStream() throws IOException {
         try (var stream = Files.walk(Path.of(BASE_PATH))) {
             List<String> list = stream.sorted().map(Path::toString).toList();
             System.out.println("listStream = " + list);
-            assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
+            assertPathList(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         }
     }
 
@@ -105,7 +110,7 @@ class ListFilesTest {
         if (!exceptions.isEmpty()) {
             System.out.println("exceptions = " + exceptions);
         }
-        assertEquals(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
+        assertPathList(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
         assertTrue(exceptions.isEmpty());
     }
 
@@ -114,7 +119,7 @@ class ListFilesTest {
         File baseDir = new File(BASE_PATH);
         String[] files = baseDir.list();
         Arrays.sort(files);
-        System.out.println("files = " + Arrays.toString(files));
+        System.out.println("     files = " + Arrays.toString(files));
         assertArrayEquals(new String[]{".gitkeep", "dir "}, files);
     }
 
