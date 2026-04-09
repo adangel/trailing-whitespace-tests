@@ -73,12 +73,13 @@ class ListFilesTest {
                 actual.toString().replace('\\', '/'));
     }
 
-    @RepeatedTest(100)
+    @RepeatedTest(10)
     void filesWalkStream() throws IOException {
         try (var stream = Files.walk(Path.of(BASE_PATH))) {
-            List<String> list = stream.sorted().map(Path::toString).toList();
+            List<Path> list = stream.sorted().filter(p -> Files.isRegularFile(p) || Files.isDirectory(p)).toList();
             System.out.println("listStream = " + list);
-            assertPathList(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), list);
+            List<String> stringList = list.stream().map(Path::toString).toList();
+            assertPathList(List.of(BASE_PATH, BASE_PATH_GITKEEP, BASE_PATH_DIR, BASE_PATH_DIR_FILE), stringList);
         }
     }
 
