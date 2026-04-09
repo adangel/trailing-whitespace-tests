@@ -26,16 +26,34 @@ class ListFilesTest {
     @TempDir
     private Path tmpdir;
 
+    private static boolean isWin() {
+        return System.getProperty("os.name").toLowerCase().startsWith("win");
+    }
+
     @BeforeEach
     void prepareBaseDir() throws IOException {
-        Files.createDirectories(Path.of(BASE_PATH_DIR));
-        Files.createFile(Path.of(BASE_PATH_DIR_FILE));
+        if (isWin()) {
+            String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
+            absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
+            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "mkdir \"" +  absoluteBasePath + "\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "type nul > \"" + absoluteBasePath + "\\file.txt\""});
+        } else {
+            Files.createDirectories(Path.of(BASE_PATH_DIR));
+            Files.createFile(Path.of(BASE_PATH_DIR_FILE));
+        }
     }
 
     @AfterEach
     void cleanBaseDir() throws IOException {
-        Files.delete(Path.of(BASE_PATH_DIR_FILE));
-        Files.delete(Path.of(BASE_PATH_DIR));
+        if (isWin()) {
+            String absoluteBasePath = Path.of(BASE_PATH).toAbsolutePath().toString();
+            absoluteBasePath = "\\\\?\\" + absoluteBasePath + "\\dir ";
+            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "del \"" + absoluteBasePath + "\\file.txt\""});
+            Runtime.getRuntime().exec(new String[]{"cmd", "/c", "rd \"" + absoluteBasePath + "\""});
+        } else {
+            Files.delete(Path.of(BASE_PATH_DIR_FILE));
+            Files.delete(Path.of(BASE_PATH_DIR));
+        }
     }
 
     @Test
